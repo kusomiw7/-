@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>程式碼片段取代工具</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <style>
+       /* Custom styles for better code display and mobile view */
+       body {
+           font-family: 'Inter', sans-serif;
+           background-color: #f7f9fc;
+           min-height: 100vh;
+       }
+       .code-area {
+           /* Using pre-wrap to allow wrapping of long lines while preserving spaces */
+           white-space: pre-wrap;
+           word-wrap: break-word;
+           padding: 1rem;
+           min-height: 150px;
+           max-height: 300px; /* Limit height for scrollable area */
+           overflow-y: auto;
+           border: 1px solid #e2e8f0;
+           border-radius: 0.5rem;
+           background-color: #ffffff;
+           font-family: Consolas, "Courier New", monospace;
+           font-size: 0.875rem;
+           line-height: 1.4;
+       }
+       /* Style for the highlighted match */
+       .highlight {
+           background-color: #fca5a5; /* Red-300 */
+           color: #1f2937; /* Dark text */
+           padding: 2px 4px;
+           border-radius: 4px;
+           display: inline-block;
+       }
+       /* Ad Slot Styling */
+       .ad-slot {
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           background-color: #e5e7eb; /* Gray-200 */
+           color: #6b7280; /* Gray-500 */
+           font-weight: 600;
+           border: 1px dashed #9ca3af; /* Gray-400 */
+           text-align: center;
+           border-radius: 0.5rem;
+           margin: 0.5rem;
+           min-width: 100px; /* For side ads */
+       }
+       /* Specific dimensions for better layout */
+       .ad-banner { height: 90px; } /* Horizontal banner */
+       .ad-skyscraper { height: 250px; } /* Vertical skyscraper style */
+   </style>
+</head>
+<body class="p-4 md:p-8">
+
+   <!-- 廣告位 1: 頂部橫幅 (Top Banner) -->
+   <!-- 實際部署時，請將此 div 內的內容替換為您的廣告程式碼 -->
+   <div id="ad-top-banner" class="ad-slot ad-banner max-w-7xl mx-auto">
+       廣告位 1 (728x90) - 可替換
+   </div>
+
+   <!-- 主要佈局：左右廣告位與中央應用程式 -->
+   <div class="flex flex-col lg:flex-row justify-center max-w-7xl mx-auto">
+
+       <!-- 廣告位 2 & 3: 左側堆疊 (Left Stack) -->
+       <!-- 實際部署時，請將此 div 內的內容替換為您的廣告程式碼 -->
+       <div class="flex lg:flex-col justify-center lg:space-y-4 space-x-4 lg:space-x-0 order-2 lg:order-1 lg:w-[150px] mb-4 lg:mb-0">
+           <div id="ad-left-1" class="ad-slot ad-skyscraper flex-1 lg:flex-none w-full">廣告位 2 (120x250)</div>
+           <div id="ad-left-2" class="ad-slot ad-skyscraper flex-1 lg:flex-none w-full">廣告位 3 (120x250)</div>
+       </div>
+
+       <!-- 中央應用程式內容 -->
+       <div id="app" class="max-w-4xl mx-auto flex-grow px-0 lg:px-4 order-1 lg:order-2">
+           
+           <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">程式碼片段取代工具</h1>
+
+           <!-- Input Section -->
+           <div class="space-y-6 mb-8">
+               <!-- Source Code Input -->
+               <div>
+                   <label for="sourceCode" class="block text-lg font-medium text-gray-700 mb-2">1. 完整原始碼 (貼上全部內容)</label>
+                   <textarea id="sourceCode" rows="8" class="w-full resize-y p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 font-mono text-sm" placeholder="請將您的完整程式碼貼在此處..."></textarea>
+               </div>
+
+               <!-- Segment Input -->
+               <div>
+                   <label for="segmentToFind" class="block text-lg font-medium text-gray-700 mb-2">2. 欲尋找並取代的片段 (貼上 'efg' 的部分)</label>
+                   <textarea id="segmentToFind" rows="3" class="w-full resize-y p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 font-mono text-sm" placeholder="請貼上您想從原始碼中尋找並替換的程式碼片段..."></textarea>
+               </div>
+
+               <!-- Replacement Input -->
+               <div>
+                   <label for="replacementCode" class="block text-lg font-medium text-gray-700 mb-2">3. 新的取代內容 (取代 'efg' 後的內容)</label>
+                   <textarea id="replacementCode" rows="3" class="w-full resize-y p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 font-mono text-sm" placeholder="請輸入將取代舊片段的新程式碼..."></textarea>
+               </div>
+           </div>
+
+           <!-- Detection and Action Area -->
+           <div class="bg-white p-6 rounded-xl shadow-lg border border-sky-100">
+               <h2 class="text-xl font-semibold text-sky-700 mb-4">偵測與預覽結果</h2>
+
+               <div id="statusMessage" class="mb-4 text-center p-3 rounded-lg text-sm transition-all duration-300">
+                   <!-- Status messages displayed here -->
+               </div>
+
+               <div class="mb-6">
+                   <label class="block text-base font-medium text-gray-700 mb-2">偵測結果預覽 (高亮部分為即將被取代的片段，將自動滾動至首個片段):</label>
+                   <pre id="previewCode" class="code-area bg-gray-50"></pre>
+               </div>
+
+               <button id="replaceButton" class="w-full py-3 px-4 bg-sky-600 text-white font-semibold rounded-lg shadow-md hover:bg-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-300 disabled:bg-gray-400 transition duration-150" disabled>
+                   確認並完整取代此片段
+               </button>
+           </div>
+
+           <!-- Confirmation Modal (Custom UI for confirmation) -->
+           <div id="confirmationModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50">
+               <div class="bg-white rounded-xl p-6 shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-100">
+                   <h3 class="text-xl font-bold mb-4 text-red-600">⚠ 最終確認</h3>
+                   <p class="mb-6 text-gray-700">您確定要將原始碼中偵測到的 **所有相符片段** 完整替換為新的內容嗎？此操作將覆蓋原始碼！</p>
+                   <div class="flex justify-end space-x-3">
+                       <button id="cancelReplace" class="py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-150">
+                           取消
+                       </button>
+                       <button id="confirmReplace" class="py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-150">
+                           確定取代
+                       </button>
+                   </div>
+               </div>
+           </div>
+
+       </div>
+
+       <!-- 廣告位 4 & 5: 右側堆疊 (Right Stack) -->
+       <!-- 實際部署時，請將此 div 內的內容替換為您的廣告程式碼 -->
+       <div class="flex lg:flex-col justify-center lg:space-y-4 space-x-4 lg:space-x-0 order-3 lg:w-[150px] mt-4 lg:mt-0">
+           <div id="ad-right-1" class="ad-slot ad-skyscraper flex-1 lg:flex-none w-full">廣告位 4 (120x250)</div>
+           <div id="ad-right-2" class="ad-slot ad-skyscraper flex-1 lg:flex-none w-full">廣告位 5 (120x250)</div>
+       </div>
+   </div>
+
+   <!-- 廣告位 6: 底部橫幅 (Bottom Banner) -->
+   <!-- 實際部署時，請將此 div 內的內容替換為您的廣告程式碼 -->
+   <div id="ad-bottom-banner" class="ad-slot ad-banner max-w-7xl mx-auto mt-4">
+       廣告位 6 (728x90) - 可替換
+   </div>
+
+   <script>
+       // DOM 元素獲取
+       const sourceCodeEl = document.getElementById('sourceCode');
+       const segmentToFindEl = document.getElementById('segmentToFind');
+       const replacementCodeEl = document.getElementById('replacementCode');
+       const previewCodeEl = document.getElementById('previewCode');
+       const replaceButton = document.getElementById('replaceButton');
+       const statusMessageEl = document.getElementById('statusMessage');
+       const confirmationModal = document.getElementById('confirmationModal');
+       const confirmReplaceButton = document.getElementById('confirmReplace');
+       const cancelReplaceButton = document.getElementById('cancelReplace');
+
+       // 狀態變數
+       let matchFound = false;
+
+       /**
+        * 顯示狀態訊息
+        * @param {string} message - 要顯示的文字
+        * @param {string} type - 訊息類型 ('success', 'error', 'info')
+        */
+       function showStatus(message, type) {
+           statusMessageEl.textContent = message;
+           statusMessageEl.className = 'mb-4 text-center p-3 rounded-lg text-sm transition-all duration-300'; // Reset classes
+
+           switch (type) {
+               case 'success':
+                   statusMessageEl.classList.add('bg-green-100', 'text-green-800');
+                   break;
+               case 'error':
+                   statusMessageEl.classList.add('bg-red-100', 'text-red-800');
+                   break;
+               case 'info':
+               default:
+                   statusMessageEl.classList.add('bg-blue-100', 'text-blue-800');
+                   break;
+           }
+       }
+
+       /**
+        * 核心邏輯：偵測、高亮並更新預覽 (含自動滾動)
+        */
+       function detectAndPreview() {
+           const source = sourceCodeEl.value;
+           const segment = segmentToFindEl.value;
+           const replacement = replacementCodeEl.value;
+           matchFound = false;
+           replaceButton.disabled = true;
+
+           // 清空預覽和狀態
+           previewCodeEl.innerHTML = '';
+
+           if (source.length === 0 || segment.length === 0) {
+               showStatus('請在上方輸入完整原始碼和欲尋找的片段。', 'info');
+               return;
+           }
+
+           // 使用 RegExp 進行全域尋找和替換，同時考慮特殊字元轉義
+           const escapedSegment = segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+           const regex = new RegExp(escapedSegment, 'g');
+           
+           // 檢查是否有匹配
+           const matches = source.match(regex);
+           
+           if (!matches || matches.length === 0) {
+               // 未找到匹配
+               previewCodeEl.textContent = source;
+               showStatus('❌ 錯誤：未在原始碼中找到完全相符的片段。請檢查輸入內容。', 'error');
+               return;
+           }
+
+           // 找到匹配，準備高亮顯示
+           matchFound = true;
+           replaceButton.disabled = false;
+           
+           // 創建高亮 HTML 內容
+           const highlightedHtml = source.replace(regex, (match) => {
+               // 使用 highlight span tag
+               return `<span class="highlight">${match}</span>`;
+           });
+           
+           // 為了保持換行符號和空格，需要用 innerHTML
+           previewCodeEl.innerHTML = highlightedHtml;
+           showStatus(`✅ 成功：已偵測到 ${matches.length} 個相符片段。預覽已自動跳轉。`, 'success');
+
+           // --- 自動滾動邏輯：確保預覽跳轉到第一個匹配處 ---
+           const firstHighlight = previewCodeEl.querySelector('.highlight');
+           if (firstHighlight) {
+               firstHighlight.scrollIntoView({
+                   behavior: 'smooth', // 平滑滾動
+                   block: 'center'    // 將元素置於可見區域的中央
+               });
+           }
+           // -----------------------------------------------------
+       }
+
+       /**
+        * 執行最終取代操作
+        */
+       function performReplacement() {
+           const source = sourceCodeEl.value;
+           const segment = segmentToFindEl.value;
+           const replacement = replacementCodeEl.value;
+
+           if (!matchFound) {
+               showStatus('🚫 錯誤：在取代前必須先成功偵測到相符的片段！', 'error');
+               return;
+           }
+
+           // 使用 RegExp 進行全域取代
+           const escapedSegment = segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+           const regex = new RegExp(escapedSegment, 'g');
+           
+           const newCode = source.replace(regex, replacement);
+
+           // 更新原始碼內容
+           sourceCodeEl.value = newCode;
+
+           // 清空待取代片段，並重新觸發偵測以顯示新程式碼
+           segmentToFindEl.value = '';
+           replacementCodeEl.value = '';
+           detectAndPreview();
+
+           // 最終狀態提示
+           showStatus('🎉 完成：所有片段已成功替換！原始碼已更新。', 'success');
+       }
+
+       // --- Event Listeners ---
+
+       // 監聽所有輸入框的輸入事件
+       sourceCodeEl.addEventListener('input', detectAndPreview);
+       segmentToFindEl.addEventListener('input', detectAndPreview);
+       replacementCodeEl.addEventListener('input', detectAndPreview);
+
+       // 初始化時先執行一次偵測
+       document.addEventListener('DOMContentLoaded', detectAndPreview);
+
+       // 點擊取代按鈕，顯示確認視窗
+       replaceButton.addEventListener('click', () => {
+           if (matchFound) {
+               confirmationModal.classList.remove('hidden');
+           }
+       });
+
+       // 確認取代按鈕
+       confirmReplaceButton.addEventListener('click', () => {
+           confirmationModal.classList.add('hidden');
+           performReplacement();
+       });
+
+       // 取消取代按鈕
+       cancelReplaceButton.addEventListener('click', () => {
+           confirmationModal.classList.add('hidden');
+       });
+       
+       // 點擊背景關閉確認視窗
+       confirmationModal.addEventListener('click', (e) => {
+           if (e.target === confirmationModal) {
+               confirmationModal.classList.add('hidden');
+           }
+       });
+
+       // 確保初始狀態顯示
+       showStatus('請在上方輸入完整原始碼和欲尋找的片段。', 'info');
+
+   </script>
+</body>
+</html>
