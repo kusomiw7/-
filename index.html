@@ -4,313 +4,1296 @@
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>程式碼片段取代工具</title>
+   <!-- Load Tailwind CSS framework -->
    <script src="https://cdn.tailwindcss.com"></script>
+   <!-- Configure Tailwind with Nord-inspired palette -->
+   <script>
+       // V9.7 - Nord Inspired Theme Configuration
+       tailwind.config = {
+           theme: {
+               extend: {
+                   fontFamily: {
+                       sans: ['Inter', 'system-ui', 'sans-serif'],
+                       mono: ['Source Code Pro', 'Fira Code', 'Consolas', 'monospace'],
+                   },
+                   colors: {
+                       // Nord Palette
+                       'bg-primary': '#2E3440',  // Deep Nord Blue (Main Background)
+                       'bg-secondary': '#3B4252',// Medium Nord Gray (Card Background)
+                       'bg-tertiary': '#ECEFF4', // Snowstorm White (Input/Code Background - light)
+                       'text-primary': '#D8DEE9', // Light Nord Text
+                       'text-secondary': '#A3BE8C', // Muted Green/Muted Text
+                       'text-dark': '#2E3440', // Dark text for light inputs
+                       
+                       'accent-cyan': '#88C0D0', // Bright Cyan (Focus/Highlight)
+                       'accent-red': '#BF616A',  // Salmon/Red (Error/Execute)
+                       'border-subtle': '#4C566A', // Muted Blue-Gray Border
+                       
+                       // Diff Colors based on Nord
+                       'diff-removed': 'rgba(191, 97, 106, 0.3)', // Soft Red Diff
+                       'diff-added': 'rgba(163, 190, 140, 0.3)', // Soft Green Diff
+                       'diff-text-removed': '#BF616A',
+                       'diff-text-added': '#A3BE8C',
+                   },
+                   boxShadow: {
+                       'xl-dark': '0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.5)',
+                       'inner-light': 'inset 0 1px 3px 0 rgba(0, 0, 0, 0.2)',
+                   }
+               }
+           }
+       }
+   </script>
    <style>
-       /* Custom styles for better code display and mobile view */
+       /* V9.7 Custom styles for the Nord theme */
        body {
-           font-family: 'Inter', sans-serif;
-           background-color: #f7f9fc;
-           min-height: 100vh;
+           --body-bg: #2E3440;
+           --text-dark: #2E3440;
+           --text-light: #D8DEE9;
+           --accent-cyan: #88C0D0;
+           background-color: var(--body-bg);
+           color: var(--text-light);
+           transition: background-color 0.3s;
        }
-       .code-area {
-           /* Using pre-wrap to allow wrapping of long lines while preserving spaces */
-           white-space: pre-wrap;
-           word-wrap: break-word;
-           padding: 1rem;
-           min-height: 150px;
-           max-height: 300px; /* Limit height for scrollable area */
-           overflow-y: auto;
-           border: 1px solid #e2e8f0;
+       
+       /* Main application card style */
+       .app-card {
+           background-color: #3B4252;
+           border: 1px solid #4C566A;
+           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+           transition: all 0.3s ease;
+       }
+
+       /* Enhanced Code/Input Area Wrapper (Used for Diff View/Line Numbers - remains dark/medium) */
+       .code-area-wrapper {
+           background-color: #3B4252;
+           border: 1px solid #4C566A;
            border-radius: 0.5rem;
-           background-color: #ffffff;
-           font-family: Consolas, "Courier New", monospace;
+           color: var(--text-light);
+           font-family: var(--font-mono);
            font-size: 0.875rem;
-           line-height: 1.4;
+           line-height: 1.5;
+           transition: border-color 0.2s, box-shadow 0.2s;
        }
-       /* Style for the highlighted match */
-       .highlight {
-           background-color: #fca5a5; /* Red-300 */
-           color: #1f2937; /* Dark text */
-           padding: 2px 4px;
+       
+       /* Specific style for editable textareas (Source Code and Rules) - LIGHT BACKGROUND */
+       .input-textarea, #sourceCode {
+           background-color: #ECEFF4; /* Snowstorm White/Light Gray */
+           color: var(--text-dark); /* Dark text for contrast */
+           border: 1px solid #D8DEE9;
+           border-radius: 0.5rem;
+           font-family: var(--font-mono);
+           font-size: 0.875rem;
+           line-height: 1.5;
+           box-shadow: inset 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+           transition: border-color 0.2s, box-shadow 0.2s;
+       }
+
+       /* Focus state for inputs/textareas */
+       .input-textarea:focus, #sourceCode:focus {
+           outline: none;
+           border-color: var(--accent-cyan);
+           box-shadow: 0 0 0 3px rgba(136, 192, 208, 0.4), inset 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+       }
+
+       /* Line numbers style */
+       .line-numbers {
+           color: #4C566A; /* Muted Nord Gray */
+           background-color: #3B4252;
+           padding: 1rem 0.75rem 1rem 0.5rem;
+           text-align: right;
+           border-right: 1px solid #4C566A;
+           user-select: none;
+           flex-shrink: 0;
+       }
+
+       /* Diff View Styles */
+       .diff-removed {
+           color: #BF616A;
+           background-color: rgba(191, 97, 106, 0.3);
+           text-decoration: none;
+           padding: 0 3px;
            border-radius: 4px;
-           display: inline-block;
+           font-weight: 500;
        }
-       /* Ad Slot Styling */
-       .ad-slot {
+       .diff-added {
+           color: #A3BE8C;
+           background-color: rgba(163, 190, 140, 0.3);
+           padding: 0 3px;
+           border-radius: 4px;
+           font-weight: 500;
+       }
+       
+       /* Current Match Highlight */
+       .current-match {
+           border: 1px solid var(--accent-cyan) !important;
+           box-shadow: 0 0 5px var(--accent-cyan) !important;
+           transition: all 0.2s;
+       }
+
+       /* Mode Toggle Styles */
+       .mode-button {
+           padding: 0.6rem 1.25rem;
+           border-radius: 0.6rem;
+           font-weight: 600;
+           transition: all 0.2s;
+           border: 1px solid #4C566A;
+       }
+       .mode-button.active {
+           background-color: var(--accent-cyan);
+           color: var(--text-dark);
+           border-color: var(--accent-cyan);
+           box-shadow: 0 4px 10px rgba(136, 192, 208, 0.4);
+       }
+       .mode-button:not(.active) {
+           background-color: transparent;
+           color: var(--text-light);
+       }
+       .mode-button:not(.active):hover {
+           background-color: rgba(255, 255, 255, 0.05);
+           color: var(--text-light);
+       }
+       
+       /* Main Execute Button Style */
+       #replaceButton {
+           background-image: linear-gradient(to right, #BF616A 0%, #D08770 100%); /* Nord Red/Orange Gradient */
+           color: var(--text-dark); /* Dark contrast text */
+           transition: all 0.2s ease-in-out;
+           border: 1px solid #BF616A;
+           font-weight: 800;
+       }
+       #replaceButton:hover {
+           opacity: 0.95;
+           transform: scale(1.01);
+           box-shadow: 0 8px 20px rgba(191, 97, 106, 0.5);
+       }
+       #replaceButton:disabled {
+           background-image: none;
+           background-color: #4C566A;
+           color: #A3BE8C;
+           border-color: #4C566A;
+           box-shadow: none;
+           cursor: not-allowed;
+           transform: scale(1);
+       }
+
+       /* Ad Slot Placeholder - Invisible Styling */
+       .ad-slot-placeholder {
+           background-color: var(--body-bg);
+           border: none;
+           color: transparent;
+           min-height: 90px;
            display: flex;
            align-items: center;
            justify-content: center;
-           background-color: #e5e7eb; /* Gray-200 */
-           color: #6b7280; /* Gray-500 */
-           font-weight: 600;
-           border: 1px dashed #9ca3af; /* Gray-400 */
-           text-align: center;
-           border-radius: 0.5rem;
-           margin: 0.5rem;
-           min-width: 100px; /* For side ads */
+           font-size: 0.875rem;
+           font-style: italic;
+           border-radius: 0.75rem;
+           opacity: 0;
+           transition: all 0.3s;
        }
-       /* Specific dimensions for better layout */
-       .ad-banner { height: 90px; } /* Horizontal banner */
-       .ad-skyscraper { height: 250px; } /* Vertical skyscraper style */
    </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 sm:p-8 flex flex-col justify-center items-center min-h-screen">
+   
+   <!-- Firebase SDKs -->
+   <script type="module">
+       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+       import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+       import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+       
+       // --- Global Firebase Instances ---
+       window.firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+       window.app = initializeApp(window.firebaseConfig);
+       window.db = getFirestore(window.app);
+       window.auth = getAuth(window.app);
+       window.appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-   <!-- 廣告位 1: 頂部橫幅 (Top Banner) -->
-   <!-- 實際部署時，請將此 div 內的內容替換為您的廣告程式碼 -->
-   <div id="ad-top-banner" class="ad-slot ad-banner max-w-7xl mx-auto">
-       廣告位 1 (728x90) - 可替換
+       // Global Quota State
+       window.quota = {
+           replacements_left: 0,
+           userId: null,
+           isLoaded: false
+       };
+
+       // --- Core Firebase Initialization and Auth ---
+       async function initFirebaseAndAuth() {
+           try {
+               if (typeof __initial_auth_token !== 'undefined') {
+                   await signInWithCustomToken(window.auth, __initial_auth_token);
+               } else {
+                   await signInAnonymously(window.auth);
+               }
+               
+               // Once authenticated, setup the quota listener
+               onAuthStateChanged(window.auth, (user) => {
+                   if (user) {
+                       window.quota.userId = user.uid;
+                       setupQuotaListener();
+                       console.log("Firebase Auth Ready. User ID:", user.uid);
+                       // Displaying partial ID for security/brevity, though full ID is used for auth
+                       document.getElementById('userIdDisplay').textContent = user.uid.substring(0, 8) + '...';
+                   } else {
+                       console.error("Firebase Auth failed or user logged out.");
+                       window.quota.userId = null;
+                       window.quota.isLoaded = true;
+                       updateQuotaUI();
+                   }
+               });
+
+           } catch (error) {
+               console.error("Firebase Auth or Init Error:", error);
+               window.quota.isLoaded = true;
+               updateQuotaUI();
+           }
+       }
+       
+       // --- Firestore Quota Management ---
+
+       /** Sets up real-time listener for user's quota status. */
+       function setupQuotaListener() {
+           if (!window.quota.userId) return;
+
+           // Firestore Path: /artifacts/{appId}/users/{userId}/quota_status/status
+           const quotaDocRef = doc(
+               window.db,
+               `artifacts/${window.appId}/users/${window.quota.userId}/quota_status/status`
+           );
+
+           onSnapshot(quotaDocRef, (docSnapshot) => {
+               if (docSnapshot.exists()) {
+                   const data = docSnapshot.data();
+                   window.quota.replacements_left = data.replacements_left || 0;
+                   console.log("Quota loaded from Firestore:", window.quota.replacements_left);
+               } else {
+                   // Initialize document if it doesn't exist (new user)
+                   window.quota.replacements_left = 3; // Initial free attempts
+                   initializeQuotaDocument(quotaDocRef);
+                   console.log("Quota document initialized to 3.");
+               }
+               window.quota.isLoaded = true;
+               updateQuotaUI();
+           }, (error) => {
+               console.error("Error listening to quota status:", error);
+               window.quota.replacements_left = 0;
+               window.quota.isLoaded = true;
+               updateQuotaUI();
+           });
+       }
+       
+       /** Initializes the quota document for new users. */
+       async function initializeQuotaDocument(docRef) {
+            try {
+               await setDoc(docRef, {
+                   replacements_left: window.quota.replacements_left,
+                   last_reset: new Date(),
+                   user_id: window.quota.userId
+               });
+            } catch (e) {
+                console.error("Error initializing quota document:", e);
+            }
+       }
+
+       /** Decrements quota after a successful replacement. */
+       window.decrementQuota = async function() {
+           if (window.quota.replacements_left <= 0) return;
+
+           const newQuota = window.quota.replacements_left - 1;
+           const quotaDocRef = doc(
+               window.db,
+               `artifacts/${window.appId}/users/${window.quota.userId}/quota_status/status`
+           );
+
+           try {
+               // Perform exponential backoff retry for updateDoc
+               let attempt = 0;
+               const maxRetries = 3;
+               while (attempt < maxRetries) {
+                   try {
+                       await updateDoc(quotaDocRef, {
+                           replacements_left: newQuota
+                       });
+                       break; // Success
+                   } catch (e) {
+                       attempt++;
+                       if (attempt >= maxRetries) throw e;
+                       await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100));
+                   }
+               }
+               
+               // Note: The onSnapshot listener will update the UI automatically
+               showStatus(`✅ 取代成功！剩餘次數: ${newQuota}`, 'success');
+           } catch (e) {
+               console.error("Error decrementing quota:", e);
+               showStatus('⚠️ 警告: 減少配額時發生錯誤 (Quota decrement failed).', 'error');
+           }
+       }
+       
+       /** V9.7: Placeholder for the Ad Click logic (Invisible and Non-functional) */
+       window.simulateAdClick = async function() {
+           console.log("Ad click simulated but logic is currently disabled as requested.");
+           showStatus('⚠️ 警告: 廣告功能目前已禁用，此按鈕僅為佔位符 (Ad function disabled).', 'info');
+           // Actual ad and quota logic is omitted here to meet the user's requirement.
+       }
+       
+       // Start Firebase process
+       window.addEventListener('load', initFirebaseAndAuth);
+
+       // Export functions to global scope for use in HTML event handlers
+       window.updateQuotaUI = updateQuotaUI;
+       window.setupQuotaListener = setupQuotaListener;
+   </script>
+
+   <!-- 廣告欄位 1 (Above Title - Invisible Placeholder) -->
+   <div id="ad-slot-1" class="ad-slot-placeholder w-full max-w-7xl mx-auto mb-6">
+       <!-- Ad Slot Placeholder -->
    </div>
 
-   <!-- 主要佈局：左右廣告位與中央應用程式 -->
-   <div class="flex flex-col lg:flex-row justify-center max-w-7xl mx-auto">
+   <!-- 中央應用程式容器 -->
+   <div class="w-full max-w-7xl mx-auto">
+       
+       <div id="main-content">
 
-       <!-- 廣告位 2 & 3: 左側堆疊 (Left Stack) -->
-       <!-- 實際部署時，請將此 div 內的內容替換為您的廣告程式碼 -->
-       <div class="flex lg:flex-col justify-center lg:space-y-4 space-x-4 lg:space-x-0 order-2 lg:order-1 lg:w-[150px] mb-4 lg:mb-0">
-           <div id="ad-left-1" class="ad-slot ad-skyscraper flex-1 lg:flex-none w-full">廣告位 2 (120x250)</div>
-           <div id="ad-left-2" class="ad-slot ad-skyscraper flex-1 lg:flex-none w-full">廣告位 3 (120x250)</div>
-       </div>
-
-       <!-- 中央應用程式內容 -->
-       <div id="app" class="max-w-4xl mx-auto flex-grow px-0 lg:px-4 order-1 lg:order-2">
+           <!-- 標題區 (V9.7: Cleaner Header, Nord Colors - Removed Warning) -->
+           <header class="text-center pb-8 pt-4">
+               <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-accent-cyan tracking-tight hover:scale-[1.01] transition-transform duration-300">
+                   CODE REPLACER <span class="text-accent-red">PRO</span>
+               </h1>
+               <p class="text-sm sm:text-base text-text-secondary mt-2 font-mono">
+                   🤖 身份 ID (部分): <span id="userIdDisplay" class="text-text-primary text-xs">...載入中...</span>
+               </p>
+           </header>
            
-           <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">程式碼片段取代工具</h1>
+           <!-- 廣告欄位 2 (Below Title - Invisible Placeholder) -->
+           <div id="ad-slot-2" class="ad-slot-placeholder w-full max-w-7xl mx-auto mt-6 mb-8">
+               <!-- Ad Slot Placeholder -->
+           </div>
+           
+           <!-- 1. 原始碼與差異檢視區 (Section 1: 主要工作區) -->
+           <div class="mb-8 app-card p-6 md:p-8 rounded-xl">
+               <h2 class="text-xl font-bold text-text-primary mb-4 border-b border-border-subtle pb-2 flex items-center">
+                   <svg class="w-5 h-5 mr-2 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                   1. 程式碼工作區 (Code Workspace)
+               </h2>
 
-           <!-- Input Section -->
-           <div class="space-y-6 mb-8">
-               <!-- Source Code Input -->
-               <div>
-                   <label for="sourceCode" class="block text-lg font-medium text-gray-700 mb-2">1. 完整原始碼 (貼上全部內容)</label>
-                   <textarea id="sourceCode" rows="8" class="w-full resize-y p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 font-mono text-sm" placeholder="請將您的完整程式碼貼在此處..."></textarea>
-               </div>
+               <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                   
+                   <!-- A. 原始碼輸入 (左側/頂部) -->
+                   <div>
+                       <label for="sourceCode" class="block text-sm font-semibold text-text-primary mb-2">原始碼 (Source Code)
+                           <span id="selectionHint" class="text-xs text-accent-cyan ml-2 italic"></span>
+                       </label>
+                       <!-- #sourceCode now has light background via .input-textarea CSS -->
+                       <textarea id="sourceCode" class="w-full p-4 input-textarea min-h-[300px] shadow-inner-light" placeholder="請將您的完整程式碼貼在此處..." oninput="saveState(); handleInputChange();" onscroll="syncScroll('sourceCode', 'lineNumbersContainer')" onmouseup="updateSelectionRange()"></textarea>
+                   </div>
 
-               <!-- Segment Input -->
-               <div>
-                   <label for="segmentToFind" class="block text-lg font-medium text-gray-700 mb-2">2. 欲尋找並取代的片段 (貼上 'efg' 的部分)</label>
-                   <textarea id="segmentToFind" rows="3" class="w-full resize-y p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 font-mono text-sm" placeholder="請貼上您想從原始碼中尋找並替換的程式碼片段..."></textarea>
-               </div>
+                   <!-- B. 差異檢視結果 (右側/下方) -->
+                   <div>
+                       <label class="block text-sm font-semibold text-text-primary mb-2">差異檢視預覽 (DIFF VIEW PREVIEW)</label>
+                       <!-- #lineNumbersContainer remains medium dark via .code-area-wrapper CSS -->
+                       <div id="lineNumbersContainer" class="code-area-wrapper shadow-xl-dark flex min-h-[300px] overflow-y-auto" onscroll="syncScroll('lineNumbersContainer', 'sourceCode')">
+                           <div id="lineNumbers" class="line-numbers sticky top-0"></div>
+                           <div id="previewCode" class="p-4 flex-grow text-text-primary text-sm whitespace-pre-wrap break-words">
+                               <span class="text-text-secondary">請輸入程式碼以開始偵測...</span>
+                           </div>
+                       </div>
+                   </div>
 
-               <!-- Replacement Input -->
-               <div>
-                   <label for="replacementCode" class="block text-lg font-medium text-gray-700 mb-2">3. 新的取代內容 (取代 'efg' 後的內容)</label>
-                   <textarea id="replacementCode" rows="3" class="w-full resize-y p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 font-mono text-sm" placeholder="請輸入將取代舊片段的新程式碼..."></textarea>
                </div>
            </div>
-
-           <!-- Detection and Action Area -->
-           <div class="bg-white p-6 rounded-xl shadow-lg border border-sky-100">
-               <h2 class="text-xl font-semibold text-sky-700 mb-4">偵測與預覽結果</h2>
-
-               <div id="statusMessage" class="mb-4 text-center p-3 rounded-lg text-sm transition-all duration-300">
-                   <!-- Status messages displayed here -->
-               </div>
-
-               <div class="mb-6">
-                   <label class="block text-base font-medium text-gray-700 mb-2">偵測結果預覽 (高亮部分為即將被取代的片段，將自動滾動至首個片段):</label>
-                   <pre id="previewCode" class="code-area bg-gray-50"></pre>
-               </div>
-
-               <button id="replaceButton" class="w-full py-3 px-4 bg-sky-600 text-white font-semibold rounded-lg shadow-md hover:bg-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-300 disabled:bg-gray-400 transition duration-150" disabled>
-                   確認並完整取代此片段
-               </button>
+           
+           <!-- 廣告欄位 2 (Below Title - Invisible Placeholder) -->
+           <div id="ad-slot-2" class="ad-slot-placeholder w-full max-w-7xl mx-auto mt-6 mb-8">
+               <!-- Ad Slot Placeholder -->
            </div>
+           
 
-           <!-- Confirmation Modal (Custom UI for confirmation) -->
-           <div id="confirmationModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50">
-               <div class="bg-white rounded-xl p-6 shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-100">
-                   <h3 class="text-xl font-bold mb-4 text-red-600">⚠ 最終確認</h3>
-                   <p class="mb-6 text-gray-700">您確定要將原始碼中偵測到的 **所有相符片段** 完整替換為新的內容嗎？此操作將覆蓋原始碼！</p>
-                   <div class="flex justify-end space-x-3">
-                       <button id="cancelReplace" class="py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-150">
-                           取消
+           <!-- 2. 取代規則設定區 (Section 2: 模式切換與規則配置) -->
+           <div class="mb-8 app-card p-6 md:p-8 rounded-xl">
+               
+               <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-border-subtle pb-3">
+                   <h2 class="text-xl font-bold text-text-primary flex items-center">
+                       <svg class="w-5 h-5 mr-2 text-accent-red" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                       2. 取代規則配置 (Rule Configuration)
+                   </h2>
+                   
+                   <!-- Quota Display & Action Box (Now includes the hidden Ad button) -->
+                   <div class="flex flex-col space-y-3 mt-3 sm:mt-0">
+                       <div id="quotaDisplaySmallBox" class="flex items-center space-x-3 p-3 rounded-lg bg-bg-secondary border border-border-subtle text-sm font-bold shadow-md">
+                           <span class="text-text-secondary">配額剩餘:</span>
+                           <!-- Quota Count -->
+                           <span id="quotaDisplay" class="text-text-primary">載入中...</span>
+                       </div>
+                       <!-- Hidden Ad Button Placeholder: Added back with 'hidden' class -->
+                       <button id="adEarnButton" onclick="simulateAdClick()"
+                               class="hidden w-full py-2 px-4 bg-accent-cyan text-text-dark font-bold rounded-lg hover:bg-accent-cyan/80 transition duration-150 text-sm shadow-md shadow-accent-cyan/50">
+                           +5 📺 廣告 (Placeholder)
                        </button>
-                       <button id="confirmReplace" class="py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-150">
-                           確定取代
+                   </div>
+               </div>
+               
+               <!-- 模式切換與規則配置 Grid -->
+               <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                   
+                   <!-- A. 模式切換與控制 (Column 1) -->
+                   <div class="lg:col-span-1 flex flex-col space-y-4">
+                       <label class="block text-sm font-semibold text-text-primary">選擇模式 (Select Mode)</label>
+                       <div class="flex space-x-4">
+                           <button id="simpleModeBtn" class="mode-button active flex-1" onclick="setMode('simple')">✨ 簡單模式</button>
+                           <button id="pipelineModeBtn" class="mode-button flex-1" onclick="setMode('pipeline')">⚙️ 管線模式</button>
+                       </div>
+
+                       <div class="pt-4">
+                           <label class="block text-sm font-semibold text-text-primary mb-2">上下文限定 (Scope Control)</label>
+                           
+                           <div id="scopeControl" class="p-4 bg-bg-secondary rounded-lg border border-border-subtle shadow-inner-light">
+                               <div class="flex items-center space-x-3 text-sm text-text-primary">
+                                   <label class="relative inline-flex items-center cursor-pointer toggle-switch">
+                                       <input type="checkbox" id="limitToSelection" class="sr-only peer" role="switch" onchange="saveState(); handleInputChange();">
+                                       <div class="w-11 h-6 bg-border-subtle peer-focus:ring-4 peer-focus:ring-accent-cyan rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-cyan"></div>
+                                   </label>
+                                   <span class="font-medium">僅作用於選定範圍</span>
+                               </div>
+                               <p id="selectionRangeInfo" class="text-xs text-text-secondary mt-2 italic">未選定範圍.</p>
+                           </div>
+                       </div>
+
+                       <!-- 執行按鈕 (High Contrast) -->
+                       <button id="replaceButton" onclick="" class="w-full py-4 mt-6 font-extrabold rounded-xl shadow-xl hover:scale-[1.03]" disabled>
+                           ⚡ 執行取代 (RUN REPLACEMENT) ⚡
+                       </button>
+                   </div>
+
+                   <!-- B. 規則輸入區 (Column 2 & 3) -->
+                   <div id="ruleInputContainer" class="lg:col-span-2 space-y-4">
+                       
+                       <!-- B.1 簡單模式內容 -->
+                       <div id="simpleModeInputs" class="space-y-4">
+                           <div>
+                               <label for="findSimple" class="block text-sm font-semibold text-text-primary mb-2">尋找區塊 (Find Block)</label>
+                               <!-- findSimple now has light background via .input-textarea CSS -->
+                               <textarea id="findSimple" class="w-full resize-y p-3 input-textarea min-h-[75px] shadow-inner-light" oninput="saveState(); handleInputChange();" placeholder='例如: console.log("debug");'></textarea>
+                           </div>
+                           <div>
+                               <label for="replaceSimple" class="block text-sm font-semibold text-text-primary mb-2">取代內容 (Replacement Content)</label>
+                               <!-- replaceSimple now has light background via .input-textarea CSS -->
+                               <textarea id="replaceSimple" class="w-full resize-y p-3 input-textarea min-h-[75px] shadow-inner-light" oninput="saveState(); handleInputChange();" placeholder='例如: logger.info("log");'></textarea>
+                           </div>
+                           <div class="flex items-center space-x-6 pt-2">
+                               <label class="text-sm font-medium text-text-primary flex items-center cursor-pointer">
+                                   <input type="checkbox" id="regexSimple" class="w-4 h-4 text-accent-cyan bg-bg-secondary border-border-subtle rounded focus:ring-accent-cyan mr-2" onchange="saveState(); handleInputChange();">
+                                   使用正規表達式 (Regex)
+                               </label>
+                               <label class="text-sm font-medium text-text-primary flex items-center cursor-pointer">
+                                   <input type="checkbox" id="caseSensitiveSimple" class="w-4 h-4 text-accent-cyan bg-bg-secondary border-border-subtle rounded focus:ring-accent-cyan mr-2" checked onchange="saveState(); handleInputChange();">
+                                   區分大小寫 (Case Sensitive)
+                               </label>
+                           </div>
+                       </div>
+
+                       <!-- B.2 管線模式內容 -->
+                       <div id="pipelineModeInputs" class="hidden">
+                            <label for="rulesJson" class="block text-sm font-semibold text-text-primary mb-2">多重取代規則 (JSON 格式)
+                               <span class="text-xs text-accent-red ml-2 italic" id="jsonErrorHint"></span>
+                           </label>
+                           <!-- rulesJson now has light background via .input-textarea CSS -->
+                           <textarea id="rulesJson" class="w-full resize-y p-3 input-textarea min-h-[250px] shadow-inner-light" oninput="saveState(); handleInputChange();" placeholder='[
+   {
+       "find": "old_var_name",
+       "replace": "new_var_name",
+       "regex": false,
+       "caseSensitive": true
+   },
+   // ... more rules
+]'></textarea>
+                       </div>
+                   </div>
+               </div>
+           </div>
+
+           <!-- 廣告欄位 4 (Mid-Page Banner - Invisible Placeholder) -->
+           <div id="ad-slot-4" class="ad-slot-placeholder w-full max-w-7xl mx-auto mt-6 mb-8 flex">
+               <!-- Ad Slot Placeholder -->
+           </div>
+
+
+           <!-- 3. 歷史紀錄與迭代控制區 (Section 3) -->
+           <div class="mb-8 p-6 md:p-8 rounded-xl app-card">
+               <h2 class="text-xl font-bold text-text-primary mb-4 border-b border-border-subtle pb-2 flex items-center">
+                   <svg class="w-5 h-5 mr-2 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                   3. 歷史紀錄與單步控制 (History & Step Control)
+               </h2 >
+               
+               <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                   
+                   <!-- 歷史紀錄 (UNDO/REDO/DOWNLOAD) -->
+                   <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+                       <button id="undoButton" onclick="undo()" class="flex-1 sm:flex-none py-2 px-4 bg-bg-secondary text-text-primary rounded-lg border border-border-subtle hover:bg-bg-secondary/80 focus:ring-2 focus:ring-accent-cyan disabled:opacity-50 transition duration-150 text-sm font-medium shadow-md">
+                           ↩ 撤銷 (Undo)
+                       </button>
+                       <button id="redoButton" onclick="redo()" class="flex-1 sm:flex-none py-2 px-4 bg-bg-secondary text-text-primary rounded-lg border border-border-subtle hover:bg-bg-secondary/80 focus:ring-2 focus:ring-accent-cyan disabled:opacity-50 transition duration-150 text-sm font-medium shadow-md">
+                           ↪ 重做 (Redo)
+                       </button>
+                       <button id="downloadButton" onclick="downloadCode()" class="flex-1 sm:flex-none py-2 px-4 bg-accent-cyan text-text-dark font-bold rounded-lg hover:bg-accent-cyan/80 focus:ring-2 focus:ring-accent-cyan/50 transition duration-150 text-sm font-medium shadow-lg">
+                           ⬇ 下載 (Download)
+                       </button>
+                   </div>
+
+                   <!-- 迭代控制 (FIND NEXT/REPLACE NEXT) -->
+                   <div class="flex flex-wrap gap-3 w-full sm:w-auto justify-end">
+                       <button id="findNextButton" onclick="findNext()" class="flex-1 sm:flex-none py-2 px-4 bg-bg-secondary text-accent-cyan rounded-lg border border-accent-cyan/50 hover:bg-bg-secondary/80 focus:ring-2 focus:ring-accent-cyan disabled:opacity-50 transition duration-150 text-sm font-medium shadow-md">
+                           尋找下一個
+                       </button>
+                       <button id="replaceNextButton" onclick="replaceNext()" class="flex-1 sm:flex-none py-2 px-4 bg-bg-secondary text-accent-red rounded-lg border border-accent-red/50 hover:bg-bg-secondary/80 focus:ring-2 focus:ring-accent-red disabled:opacity-50 transition duration-150 text-sm font-medium shadow-md">
+                           取代下一個
+                       </button>
+                   </div>
+
+               </div>
+           </div>
+
+           <!-- 狀態訊息 -->
+           <div id="statusMessage" class="mt-4 text-center p-4 rounded-lg font-medium text-sm transition-all duration-300 border border-transparent" role="status" aria-live="polite">
+               <span class="text-text-secondary">💡 INIT: 歡迎使用程式碼取代工具 (V9.7). 正在連接資料庫...</span>
+           </div>
+
+           <!-- Confirmation Modal (Custom UI) -->
+           <div id="confirmationModal" class="hidden fixed inset-0 bg-bg-primary bg-opacity-95 flex items-center justify-center p-4 z-50 transition-opacity duration-300">
+               <div class="bg-bg-secondary rounded-xl p-6 md:p-8 shadow-2xl border border-accent-red/50 max-w-sm md:max-w-md w-full transform hover:scale-[1.01] transition-transform">
+                   <h3 class="text-2xl font-bold mb-4 text-accent-red border-b border-border-subtle pb-2">⚠ 警告：最終確認</h3>
+                   <p class="mb-6 text-text-primary text-base"></p>
+                   <div class="flex justify-end space-x-3">
+                       <button id="cancelReplace" class="py-2 px-4 border border-border-subtle rounded-lg text-text-secondary hover:bg-bg-secondary/80 transition duration-150 font-medium text-sm">
+                           取消 (ABORT)
+                       </button>
+                       <button id="confirmReplace" class="py-2 px-4 bg-accent-red text-text-dark font-bold rounded-lg hover:bg-accent-red/80 transition duration-150 text-sm shadow-md shadow-accent-red/50">
+                           確定執行 (CONFIRM)
                        </button>
                    </div>
                </div>
            </div>
 
-       </div>
+       </div> <!-- end of #main-content -->
 
-       <!-- 廣告位 4 & 5: 右側堆疊 (Right Stack) -->
-       <!-- 實際部署時，請將此 div 內的內容替換為您的廣告程式碼 -->
-       <div class="flex lg:flex-col justify-center lg:space-y-4 space-x-4 lg:space-x-0 order-3 lg:w-[150px] mt-4 lg:mt-0">
-           <div id="ad-right-1" class="ad-slot ad-skyscraper flex-1 lg:flex-none w-full">廣告位 4 (120x250)</div>
-           <div id="ad-right-2" class="ad-slot ad-skyscraper flex-1 lg:flex-none w-full">廣告位 5 (120x250)</div>
-       </div>
-   </div>
-
-   <!-- 廣告位 6: 底部橫幅 (Bottom Banner) -->
-   <!-- 實際部署時，請將此 div 內的內容替換為您的廣告程式碼 -->
-   <div id="ad-bottom-banner" class="ad-slot ad-banner max-w-7xl mx-auto mt-4">
-       廣告位 6 (728x90) - 可替換
+   </div> <!-- end of container -->
+   
+   <!-- 廣告欄位 5 (Bottom Banner - Invisible Placeholder) -->
+   <div id="ad-slot-5" class="ad-slot-placeholder w-full max-w-7xl mx-auto mt-6 mb-4">
+       <!-- Ad Slot Placeholder -->
    </div>
 
    <script>
-       // DOM 元素獲取
+       // DOM Elements
        const sourceCodeEl = document.getElementById('sourceCode');
-       const segmentToFindEl = document.getElementById('segmentToFind');
-       const replacementCodeEl = document.getElementById('replacementCode');
-       const previewCodeEl = document.getElementById('previewCode');
        const replaceButton = document.getElementById('replaceButton');
        const statusMessageEl = document.getElementById('statusMessage');
        const confirmationModal = document.getElementById('confirmationModal');
        const confirmReplaceButton = document.getElementById('confirmReplace');
        const cancelReplaceButton = document.getElementById('cancelReplace');
+       const lineNumbersEl = document.getElementById('lineNumbers');
+       const lineNumbersContainerEl = document.getElementById('lineNumbersContainer');
+       const undoButton = document.getElementById('undoButton');
+       const redoButton = document.getElementById('redoButton');
+       const findNextButton = document.getElementById('findNextButton');
+       const replaceNextButton = document.getElementById('replaceNextButton');
+       const selectionRangeInfoEl = document.getElementById('selectionRangeInfo');
+       const limitToSelectionEl = document.getElementById('limitToSelection');
+       const selectionHintEl = document.getElementById('selectionHint');
+       const simpleModeBtn = document.getElementById('simpleModeBtn');
+       const pipelineModeBtn = document.getElementById('pipelineModeBtn');
+       const simpleModeInputs = document.getElementById('simpleModeInputs');
+       const pipelineModeInputs = document.getElementById('pipelineModeInputs');
+       const rulesJsonEl = document.getElementById('rulesJson');
+       const jsonErrorHintEl = document.getElementById('jsonErrorHint');
+       const findSimpleEl = document.getElementById('findSimple');
+       const replaceSimpleEl = document.getElementById('replaceSimple');
+       const regexSimpleEl = document.getElementById('regexSimple');
+       const caseSensitiveSimpleEl = document.getElementById('caseSensitiveSimple');
+       const previewCodeEl = document.getElementById('previewCode');
+       const quotaDisplayEl = document.getElementById('quotaDisplay');
+       const adEarnButton = document.getElementById('adEarnButton'); // Re-introduced
+       const userIdDisplayEl = document.getElementById('userIdDisplay');
 
-       // 狀態變數
+       // Global State Variables
+       let isSimpleMode = true;
+       window.parsedRules = [];
+       let allMatches = [];
+       let currentMatchIndex = 0;
        let matchFound = false;
+       let selectionRange = { start: 0, end: 0 };
+       
+       let history = [];
+       let historyIndex = -1;
 
-       /**
-        * 顯示狀態訊息
-        * @param {string} message - 要顯示的文字
-        * @param {string} type - 訊息類型 ('success', 'error', 'info')
-        */
+       // --- Core UI Updates ---
+
+       /** V9.4: Updates the Quota UI and button state (Ad logic removed) */
+       function updateQuotaUI() {
+           const quota = window.quota.replacements_left;
+           const isLoaded = window.quota.isLoaded;
+           
+           if (isLoaded) {
+               // Update the small display next to the section title
+               quotaDisplayEl.innerHTML = `<span class="${quota > 0 ? 'text-accent-cyan' : 'text-accent-red'}">${quota}</span> 次`;
+               
+               // Only enable the main replacement button if there's quota AND rules are parsed
+               const rulesParsed = window.parsedRules && window.parsedRules.length > 0;
+               replaceButton.disabled = quota <= 0 || !rulesParsed;
+               
+               // Set the ad button visibility (currently hidden by CSS)
+               if (adEarnButton) adEarnButton.disabled = !window.quota.isLoaded;
+
+               if (quota <= 0 && rulesParsed) {
+                   showStatus('🚫 配額用盡! 請儲存您的工作並等待次日重設。', 'error');
+               }
+               
+           } else {
+                quotaDisplayEl.textContent = `載入中...`;
+                replaceButton.disabled = true;
+                if (adEarnButton) adEarnButton.disabled = true;
+           }
+       }
+       
+       // --- Core Utilities ---
+
+       /** V9.1: Set the current mode (simple or pipeline) */
+       function setMode(mode) {
+           isSimpleMode = mode === 'simple';
+           
+           // Toggle UI buttons
+           simpleModeBtn.classList.toggle('active', isSimpleMode);
+           pipelineModeBtn.classList.toggle('active', !isSimpleMode);
+
+           // Toggle Input containers
+           simpleModeInputs.classList.toggle('hidden', !isSimpleMode);
+           pipelineModeInputs.classList.toggle('hidden', isSimpleMode);
+
+           // Update button text
+           replaceButton.textContent = isSimpleMode ? '⚡ 執行取代 (RUN REPLACEMENT) ⚡' : '⚡ 執行取代管線 (RUN PIPELINE) ⚡';
+
+           saveState(); // Save the mode change
+           handleInputChange();
+       }
+
+       /** Debounce utility function */
+       function debounce(func, timeout = 350) {
+           let timer;
+           return (...args) => {
+               clearTimeout(timer);
+               timer = setTimeout(() => {
+                   func.apply(this, args);
+               }, timeout);
+           };
+       }
+
+       /** V9.1: Generate single-rule JSON from simple inputs */
+       function generateSimpleRule() {
+           const find = findSimpleEl.value;
+           const replace = replaceSimpleEl.value;
+           const regex = regexSimpleEl.checked;
+           const caseSensitive = caseSensitiveSimpleEl.checked;
+
+           if (find.trim().length === 0) {
+               return [];
+           }
+
+           return [{
+               find: find,
+               replace: replace,
+               regex: regex,
+               caseSensitive: caseSensitive
+           }];
+       }
+
+       /** Parse Rules (V9.1: Based on mode) */
+       function parseRules() {
+           let rules = null;
+
+           if (isSimpleMode) {
+               rules = generateSimpleRule();
+               jsonErrorHintEl.textContent = '';
+           } else {
+               try {
+                   rules = JSON.parse(rulesJsonEl.value);
+                   if (!Array.isArray(rules) || rules.length === 0) {
+                       throw new Error("規則必須是一個非空的陣列 (Rules must be a non-empty array).");
+                   }
+                   jsonErrorHintEl.textContent = '✅ JSON 格式正確';
+                   jsonErrorHintEl.classList.remove('text-accent-red');
+                   jsonErrorHintEl.classList.add('text-accent-cyan');
+               } catch (e) {
+                   window.parsedRules = [];
+                   jsonErrorHintEl.textContent = '❌ JSON 格式錯誤: ' + e.message.substring(0, 50) + '...';
+                   jsonErrorHintEl.classList.add('text-accent-red');
+                   jsonErrorHintEl.classList.remove('text-accent-cyan');
+                   return null;
+               }
+           }
+
+           if (!rules || rules.length === 0) {
+                window.parsedRules = [];
+                updateQuotaUI();
+                return null;
+           }
+
+           window.parsedRules = rules;
+           updateQuotaUI();
+           return rules;
+       }
+
+       /** Update history stack and button states */
+       function updateHistory(newCode, pushToHistory = true) {
+           if (history[historyIndex] === newCode) return;
+
+           if (pushToHistory) {
+               if (historyIndex < history.length - 1) {
+                   history = history.slice(0, historyIndex + 1);
+               }
+               
+               history.push(newCode);
+               historyIndex++;
+           }
+
+           const maxHistory = 50;
+           if (history.length > maxHistory) {
+               history.shift();
+               historyIndex--;
+           }
+
+           updateHistoryButtons();
+       }
+
+       /** Updates the enabled/disabled state of history buttons */
+       function updateHistoryButtons() {
+           undoButton.disabled = historyIndex <= 0;
+           redoButton.disabled = historyIndex >= history.length - 1;
+       }
+
+       /** Undo operation */
+       function undo() {
+           if (historyIndex > 0) {
+               historyIndex--;
+               sourceCodeEl.value = history[historyIndex];
+               saveState(false);
+               detectAndPreview();
+           }
+           updateHistoryButtons();
+       }
+
+       /** Redo operation */
+       function redo() {
+           if (historyIndex < history.length - 1) {
+               historyIndex++;
+               sourceCodeEl.value = history[historyIndex];
+               saveState(false);
+               detectAndPreview();
+           }
+           updateHistoryButtons();
+       }
+
+       /** Download code */
+       function downloadCode() {
+           const code = sourceCodeEl.value;
+           if (code.trim().length === 0) {
+                showStatus('❌ 錯誤: 原始碼為空，無法下載 (Source code is empty, cannot download).', 'error');
+               return;
+           }
+           const blob = new Blob([code], { type: 'text/plain' });
+           const url = URL.createObjectURL(blob);
+           const a = document.createElement('a');
+           a.href = url;
+           a.download = 'refactored_code_' + Date.now() + '.txt';
+           document.body.appendChild(a);
+           a.click();
+           document.body.removeChild(a);
+           URL.revokeObjectURL(url);
+           showStatus('⬇ 下載成功! 檔案已匯出 (Download successful! File exported).', 'success');
+       }
+
+       /** Save state to LocalStorage (V9.7 Key) */
+       function saveState(updateHistoryFlag = true) {
+           const state = {
+               source: sourceCodeEl.value,
+               rules: rulesJsonEl.value,
+               limit: limitToSelectionEl.checked,
+               isSimple: isSimpleMode,
+               findSimple: findSimpleEl.value,
+               replaceSimple: replaceSimpleEl.value,
+               regexSimple: regexSimpleEl.checked,
+               caseSensitiveSimple: caseSensitiveSimpleEl.checked,
+           };
+           localStorage.setItem('codeReplacerStateV97', JSON.stringify(state));
+
+           if (updateHistoryFlag) {
+                updateHistory(sourceCodeEl.value, true);
+           }
+       }
+
+       /** Load state from LocalStorage (V9.7 Key) */
+       function loadState() {
+           const savedState = localStorage.getItem('codeReplacerStateV97');
+           if (savedState) {
+               const state = JSON.parse(savedState);
+               sourceCodeEl.value = state.source || '';
+               rulesJsonEl.value = state.rules || rulesJsonEl.placeholder;
+               limitToSelectionEl.checked = state.limit || false;
+               
+               // V9.1 Load Simple Mode states
+               isSimpleMode = state.isSimple !== undefined ? state.isSimple : true;
+               findSimpleEl.value = state.findSimple || 'old_function_call';
+               replaceSimpleEl.value = state.replaceSimple || 'new_api_call';
+               regexSimpleEl.checked = state.regexSimple || false;
+               caseSensitiveSimpleEl.checked = state.caseSensitiveSimple !== undefined ? state.caseSensitiveSimple : true;
+
+               setMode(isSimpleMode ? 'simple' : 'pipeline');
+
+               limitToSelectionEl.setAttribute('aria-checked', limitToSelectionEl.checked);
+               
+               if (sourceCodeEl.value.length > 0) {
+                    history = [sourceCodeEl.value];
+                    historyIndex = 0;
+               } else {
+                    history = [];
+                    historyIndex = -1;
+               }
+           } else {
+               // Set initial placeholder for simple mode
+               findSimpleEl.value = 'old_function_call';
+               replaceSimpleEl.value = 'new_api_call';
+               caseSensitiveSimpleEl.checked = true;
+           }
+           updateHistoryButtons();
+           handleInputChange();
+           sourceCodeEl.focus();
+       }
+
+       /** Display status messages */
        function showStatus(message, type) {
            statusMessageEl.textContent = message;
-           statusMessageEl.className = 'mb-4 text-center p-3 rounded-lg text-sm transition-all duration-300'; // Reset classes
+           statusMessageEl.className = 'mt-4 text-center p-4 rounded-lg font-medium text-sm transition-all duration-300 border';
+           statusMessageEl.style.boxShadow = 'none';
+
+           statusMessageEl.classList.remove('bg-diff-added', 'text-text-primary', 'border-diff-added', 'bg-diff-removed', 'text-text-primary', 'border-diff-removed', 'bg-bg-secondary', 'text-accent-cyan', 'border-accent-cyan');
+           statusMessageEl.style.backgroundColor = '#3B4252';
+           statusMessageEl.style.borderColor = '#4C566A';
 
            switch (type) {
                case 'success':
-                   statusMessageEl.classList.add('bg-green-100', 'text-green-800');
+                   statusMessageEl.style.backgroundColor = 'var(--diff-added)';
+                   statusMessageEl.style.color = 'var(--text-light)';
+                   statusMessageEl.style.borderColor = '#A3BE8C';
+                   statusMessageEl.style.boxShadow = '0 0 10px rgba(163, 190, 140, 0.5)';
                    break;
                case 'error':
-                   statusMessageEl.classList.add('bg-red-100', 'text-red-800');
+                   statusMessageEl.style.backgroundColor = 'var(--diff-removed)';
+                   statusMessageEl.style.color = 'var(--text-light)';
+                   statusMessageEl.style.borderColor = '#BF616A';
+                   statusMessageEl.style.boxShadow = '0 0 10px rgba(191, 97, 106, 0.5)';
                    break;
                case 'info':
                default:
-                   statusMessageEl.classList.add('bg-blue-100', 'text-blue-800');
+                   statusMessageEl.style.backgroundColor = '#3B4252';
+                   statusMessageEl.style.color = 'var(--accent-cyan)';
+                   statusMessageEl.style.borderColor = 'var(--accent-cyan)';
+                   statusMessageEl.style.boxShadow = '0 0 10px rgba(136, 192, 208, 0.3)';
                    break;
            }
        }
 
-       /**
-        * 核心邏輯：偵測、高亮並更新預覽 (含自動滾動)
-        */
-       function detectAndPreview() {
-           const source = sourceCodeEl.value;
-           const segment = segmentToFindEl.value;
-           const replacement = replacementCodeEl.value;
-           matchFound = false;
-           replaceButton.disabled = true;
-
-           // 清空預覽和狀態
-           previewCodeEl.innerHTML = '';
-
-           if (source.length === 0 || segment.length === 0) {
-               showStatus('請在上方輸入完整原始碼和欲尋找的片段。', 'info');
-               return;
-           }
-
-           // 使用 RegExp 進行全域尋找和替換，同時考慮特殊字元轉義
-           const escapedSegment = segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-           const regex = new RegExp(escapedSegment, 'g');
+       /** Generates line numbers */
+       function generateLineNumbers(code) {
+           const lines = code.split('\n');
+           const numLines = lines.length;
            
-           // 檢查是否有匹配
-           const matches = source.match(regex);
-           
-           if (!matches || matches.length === 0) {
-               // 未找到匹配
-               previewCodeEl.textContent = source;
-               showStatus('❌ 錯誤：未在原始碼中找到完全相符的片段。請檢查輸入內容。', 'error');
-               return;
-           }
+           const lineNumbersHtml = Array.from({ length: numLines }, (_, i) =>
+               `<div>${i + 1}</div>`
+           ).join('');
 
-           // 找到匹配，準備高亮顯示
-           matchFound = true;
-           replaceButton.disabled = false;
-           
-           // 創建高亮 HTML 內容
-           const highlightedHtml = source.replace(regex, (match) => {
-               // 使用 highlight span tag
-               return `<span class="highlight">${match}</span>`;
-           });
-           
-           // 為了保持換行符號和空格，需要用 innerHTML
-           previewCodeEl.innerHTML = highlightedHtml;
-           showStatus(`✅ 成功：已偵測到 ${matches.length} 個相符片段。預覽已自動跳轉。`, 'success');
-
-           // --- 自動滾動邏輯：確保預覽跳轉到第一個匹配處 ---
-           const firstHighlight = previewCodeEl.querySelector('.highlight');
-           if (firstHighlight) {
-               firstHighlight.scrollIntoView({
-                   behavior: 'smooth', // 平滑滾動
-                   block: 'center'    // 將元素置於可見區域的中央
-               });
-           }
-           // -----------------------------------------------------
+           lineNumbersEl.innerHTML = lineNumbersHtml;
        }
 
-       /**
-        * 執行最終取代操作
-        */
-       function performReplacement() {
-           const source = sourceCodeEl.value;
-           const segment = segmentToFindEl.value;
-           const replacement = replacementCodeEl.value;
+       /** Syncs scroll between source and preview */
+       function syncScroll(sourceId, targetId) {
+           const source = document.getElementById(sourceId);
+           const target = document.getElementById(targetId);
+           if (!target) return;
+           // The logic here is simplified: if the source is the line container, scroll the code. Otherwise, scroll the container.
+           if (source.id === 'sourceCode') {
+               target.scrollTop = source.scrollTop;
+           } else if (source.id === 'lineNumbersContainer') {
+               document.getElementById('sourceCode').scrollTop = source.scrollTop;
+           }
+       }
+       
+       /** V9.0: Updates the selection range state */
+       function updateSelectionRange() {
+           const start = sourceCodeEl.selectionStart;
+           const end = sourceCodeEl.selectionEnd;
 
-           if (!matchFound) {
-               showStatus('🚫 錯誤：在取代前必須先成功偵測到相符的片段！', 'error');
+           selectionRange.start = start;
+           selectionRange.end = end;
+           
+           const selectedText = sourceCodeEl.value.substring(start, end);
+
+           // Update UI hint
+           if (start !== end) {
+               selectionRangeInfoEl.textContent = `範圍: ${start} - ${end} (${selectedText.length} 字元).`;
+               selectionHintEl.textContent = `(已選定: ${selectedText.length} 字元)`;
+               limitToSelectionEl.disabled = false;
+           } else {
+               selectionRangeInfoEl.textContent = '未選定範圍 (No selection yet).';
+               selectionHintEl.textContent = '';
+               limitToSelectionEl.disabled = true;
+               limitToSelectionEl.checked = false; // Force disable if no selection
+           }
+           limitToSelectionEl.setAttribute('aria-checked', limitToSelectionEl.checked);
+           handleInputChange();
+       }
+
+       /** Core logic: Detect and generate Diff View (V9.1 - based on first rule) */
+       function detectAndPreview() {
+           // ⚠️ 此處是取代邏輯的核心，在瀏覽器端完全可見。
+           const rules = parseRules();
+           let source = sourceCodeEl.value;
+           
+           matchFound = false;
+           findNextButton.disabled = true;
+           replaceNextButton.disabled = true;
+           
+           updateQuotaUI();
+           
+           allMatches = [];
+           currentMatchIndex = 0;
+
+           generateLineNumbers(source);
+           previewCodeEl.innerHTML = `<span class="text-text-secondary">${source.length === 0 ? '請輸入程式碼以開始偵測...' : '輸入規則以啟動偵測...'}</span>`;
+
+           if (source.length === 0 || !rules || rules.length === 0) {
+               showStatus('💡 INIT: 輸入程式碼及規則以啟動偵測程序...', 'info');
                return;
            }
 
-           // 使用 RegExp 進行全域取代
-           const escapedSegment = segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-           const regex = new RegExp(escapedSegment, 'g');
+           // --- Contextual Scope Check ---
+           let diffSource = source;
+           let offset = 0;
            
-           const newCode = source.replace(regex, replacement);
+           if (limitToSelectionEl.checked && selectionRange.start !== selectionRange.end) {
+               diffSource = source.substring(selectionRange.start, selectionRange.end);
+               offset = selectionRange.start;
+               selectionHintEl.textContent = `(限定範圍於 ${selectionRange.end - selectionRange.start} 字元)`;
+           } else {
+                selectionHintEl.textContent = selectionRange.start !== selectionRange.end ? `(已選定: ${selectionRange.end - selectionRange.start} 字元)` : '';
+           }
+           
+           // --- DIFF LOGIC (Uses ONLY the FIRST Rule for simplicity in display) ---
+           const firstRule = rules[0];
+           let regex;
+           let flags = 'g';
 
-           // 更新原始碼內容
+           if (!firstRule.find) {
+                showStatus('❌ ERROR: 第一條規則未包含 "find" 欄位。', 'error');
+                return;
+           }
+
+           if (!firstRule.replace) {
+                firstRule.replace = "";
+           }
+
+           if (firstRule.caseSensitive === false) flags += 'i';
+
+           try {
+               if (firstRule.regex === true) {
+                   regex = new RegExp(firstRule.find, flags);
+               } else {
+                   const escapedSegment = firstRule.find
+                       .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                       .replace(/\n/g, '\\n');
+                   regex = new RegExp(escapedSegment, flags);
+               }
+           } catch (e) {
+               previewCodeEl.textContent = source;
+               showStatus(`❌ REGEX ERROR (Rule 1): 正規表達式語法錯誤: ${e.message}`, 'error');
+               return;
+           }
+
+           // Find all matches in the potentially restricted source (diffSource)
+           let match;
+           allMatches = [];
+           while ((match = regex.exec(diffSource)) !== null) {
+               const fullMatch = [...match];
+               fullMatch.index = match.index + offset;
+               allMatches.push(fullMatch);
+           }
+           
+           if (allMatches.length === 0) {
+               previewCodeEl.textContent = source;
+               showStatus('❌ ERROR: 未匹配 (No Match)。請檢查規則。', 'error');
+               return;
+           }
+
+           matchFound = true;
+           findNextButton.disabled = false;
+           replaceNextButton.disabled = false;
+           
+           // Generate Diff HTML based on the original full source
+           let lastIndex = 0;
+           let highlightedHtml = '';
+           
+           // Regex for single replacement (used for applying $1, $2 groups)
+           const singleMatchRegex = new RegExp(regex.source, regex.flags.replace('g', ''));
+
+           for (let i = 0; i < allMatches.length; i++) {
+               const matchInfo = allMatches[i];
+               const matchText = matchInfo[0];
+               const matchStart = matchInfo.index;
+               const matchEnd = matchStart + matchText.length;
+               
+               // 1. Add non-matching text (from the full source)
+               highlightedHtml += source.substring(lastIndex, matchStart);
+               
+               // 2. Generate replaced text using the first rule
+               const replacedText = matchText.replace(singleMatchRegex, firstRule.replace);
+
+               // 3. Handle newlines for pre-wrap
+               const removedHtml = matchText.replace(/\n/g, '↵<br class="hidden">').replace(/\r/g, '');
+               const addedHtml = replacedText.replace(/\n/g, '↵<br class="hidden">').replace(/\r/g, '');
+
+               // 4. Create Diff Tags
+               if (matchText !== replacedText) {
+                   highlightedHtml += `<span class="diff-removed">${removedHtml}</span><span class="diff-added">${addedHtml}</span>`;
+               } else {
+                   highlightedHtml += `<span class="diff-removed">${removedHtml}</span>`;
+               }
+
+               lastIndex = matchEnd;
+           }
+
+           // 5. Add trailing non-matching text
+           highlightedHtml += source.substring(lastIndex);
+           
+           // Replace internal newline markers with actual <br> tags
+           highlightedHtml = highlightedHtml.replace(/↵<br class="hidden">/g, '<br>');
+
+           previewCodeEl.innerHTML = highlightedHtml;
+           showStatus(`✅ SUCCESS: 偵測到 ${allMatches.length} 個相符物件 (Rule 1)。`, 'success');
+
+           currentMatchIndex = 0;
+           scrollToMatch(currentMatchIndex, 'diff-removed');
+       }
+
+       /** Scrolls to the N-th match item */
+       function scrollToMatch(index, className) {
+           const matches = previewCodeEl.querySelectorAll(`.${className}`);
+           if (matches.length > 0 && index >= 0 && index < matches.length) {
+               const target = matches[index];
+               
+               previewCodeEl.querySelectorAll('.current-match').forEach(el => {
+                   el.classList.remove('current-match');
+                   el.style.boxShadow = 'none';
+               });
+
+               target.classList.add('current-match');
+               target.style.boxShadow = '0 0 10px var(--accent-cyan)';
+
+               requestAnimationFrame(() => {
+                   const highlightTop = target.offsetTop;
+                   const wrapperHeight = lineNumbersContainerEl.clientHeight;
+
+                   lineNumbersContainerEl.scrollTop = highlightTop - (wrapperHeight / 3);
+                   sourceCodeEl.scrollTop = lineNumbersContainerEl.scrollTop;
+               });
+               
+               showStatus(`🔍 檢視 Rule 1 匹配項 ${index + 1} / ${allMatches.length}.`, 'info');
+           }
+       }
+
+       /** Find Next match */
+       function findNext() {
+           if (allMatches.length === 0) return;
+           currentMatchIndex = (currentMatchIndex + 1) % allMatches.length;
+           scrollToMatch(currentMatchIndex, 'diff-removed');
+       }
+
+       /** Replace Next match (V9.1 - uses the first rule) */
+       function replaceNext() {
+           if (allMatches.length === 0) return;
+           
+           const source = sourceCodeEl.value;
+           const matchInfo = allMatches[currentMatchIndex];
+           const matchText = matchInfo[0];
+           const matchStart = matchInfo.index;
+           
+           const firstRule = window.parsedRules[0];
+           if (!firstRule) return;
+
+           let regex;
+           let flags = '';
+           if (firstRule.caseSensitive === false) flags += 'i';
+           
+           try {
+               regex = new RegExp(firstRule.find, flags);
+           } catch (e) {
+               showStatus(`❌ REGEX ERROR: ${e.message}`, 'error');
+               return;
+           }
+
+           // 1. Calculate new code after single replacement
+           let newCode = source.substring(0, matchStart);
+           const replacedSegment = matchText.replace(regex, firstRule.replace || "");
+           newCode += replacedSegment;
+           newCode += source.substring(matchStart + matchText.length);
+
+           // 2. Update source and history
            sourceCodeEl.value = newCode;
-
-           // 清空待取代片段，並重新觸發偵測以顯示新程式碼
-           segmentToFindEl.value = '';
-           replacementCodeEl.value = '';
+           updateHistory(newCode, true);
+           
+           // 3. Re-detect and preview
            detectAndPreview();
 
-           // 最終狀態提示
-           showStatus('🎉 完成：所有片段已成功替換！原始碼已更新。', 'success');
+           // 4. Scroll to next match
+           if (allMatches.length > 0) {
+                currentMatchIndex = currentMatchIndex % allMatches.length;
+                scrollToMatch(currentMatchIndex, 'diff-removed');
+           } else {
+                showStatus('✅ Rule 1: 已完成所有單步取代。', 'success');
+           }
+           saveState();
        }
 
-       // --- Event Listeners ---
 
-       // 監聽所有輸入框的輸入事件
-       sourceCodeEl.addEventListener('input', detectAndPreview);
-       segmentToFindEl.addEventListener('input', detectAndPreview);
-       replacementCodeEl.addEventListener('input', detectAndPreview);
+       /** V9.3: Executes the full Multi-Rule Pipeline (or Simple Rule) */
+       function performReplacement() {
+           // ⚠️ 此處是取代邏輯的核心，在瀏覽器端完全可見。
+           
+           // --- V9.3 Quota Check ---
+           if (window.quota.isLoaded && window.quota.replacements_left <= 0) {
+                showStatus('🚫 配額用盡! 請儲存您的工作並等待次日重設。', 'error');
+                return;
+           }
 
-       // 初始化時先執行一次偵測
-       document.addEventListener('DOMContentLoaded', detectAndPreview);
+           const rules = window.parsedRules;
+           if (!rules || rules.length === 0) {
+               showStatus('🚫 WARNING: 規則管線是空的或無效。', 'error');
+               return;
+           }
+           
+           let currentCode = sourceCodeEl.value;
+           let totalReplacements = 0;
+           let effectiveSource;
+           
+           // --- Contextual Scope Control ---
+           if (limitToSelectionEl.checked && selectionRange.start !== selectionRange.end) {
+               effectiveSource = currentCode.substring(selectionRange.start, selectionRange.end);
+           } else {
+               effectiveSource = currentCode;
+           }
+           
+           // --- Execute Pipeline ---
+           for (let i = 0; i < rules.length; i++) {
+               const rule = rules[i];
+               const find = rule.find;
+               const replace = rule.replace || "";
+               
+               let flags = 'g';
+               if (rule.caseSensitive === false) flags += 'i';
+               
+               let regex;
+               try {
+                   if (rule.regex === true) {
+                       regex = new RegExp(find, flags);
+                   } else {
+                       const escapedSegment = find
+                           .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                           .replace(/\n/g, '\\n');
+                       regex = new RegExp(escapedSegment, flags);
+                   }
+               } catch (e) {
+                   showStatus(`❌ REGEX ERROR (Rule ${i + 1}): 語法錯誤。停止管線。`, 'error');
+                   return;
+               }
+               
+               // Count replacements on the effective source before replacement
+               const beforeCount = (effectiveSource.match(regex) || []).length;
+               
+               // Perform replacement on the effective source
+               effectiveSource = effectiveSource.replace(regex, replace);
 
-       // 點擊取代按鈕，顯示確認視窗
+               totalReplacements += beforeCount;
+           }
+
+           // --- V9.3 Decrement Quota AFTER successful replacement ---
+           if (totalReplacements > 0) {
+                // If replacement was successful and modified code, decrement quota
+                window.decrementQuota();
+           }
+
+           // --- Re-integrate into full source code ---
+           if (limitToSelectionEl.checked && selectionRange.start !== selectionRange.end) {
+               // If scope was limited, inject the modified effectiveSource back into the original code
+               currentCode = currentCode.substring(0, selectionRange.start) +
+                             effectiveSource +
+                             currentCode.substring(selectionRange.end);
+           } else {
+               currentCode = effectiveSource;
+           }
+
+           // Update source and history
+           sourceCodeEl.value = currentCode;
+           updateHistory(currentCode, true);
+           detectAndPreview();
+
+           // Final Status
+           showStatus(`🚀 ${isSimpleMode ? '取代完成' : 'PIPELINE COMPLETE'}: 執行 ${rules.length} 條規則。共取代 ${totalReplacements} 處。`, 'success');
+           matchFound = false;
+           replaceButton.disabled = true;
+           saveState();
+       }
+
+       // --- Event Listeners and Setup ---
+       
+       const debouncedDetectAndPreview = debounce(detectAndPreview, 350);
+
+       function handleInputChange() {
+           showStatus('🔍 DETECTING: 規則與程式碼更新中...', 'info');
+           debouncedDetectAndPreview();
+       }
+
        replaceButton.addEventListener('click', () => {
-           if (matchFound) {
+            // --- V9.3 Quota Check on Click ---
+           if (window.quota.isLoaded && window.quota.replacements_left <= 0) {
+                showStatus('🚫 配額用盡! 請儲存您的工作並等待次日重設。', 'error');
+                return;
+           }
+
+           // Update modal message with current rule count
+           const rulesCount = window.parsedRules ? window.parsedRules.length : 0;
+           const actionText = isSimpleMode ? '取代操作' : '取代規則';
+           confirmationModal.querySelector('p').innerHTML = `系統將執行 **${rulesCount} 個 ${actionText}** 並覆寫程式碼。這將消耗 **1 次** 配額。您確定要執行嗎？`;
+           if (rulesCount > 0) {
                confirmationModal.classList.remove('hidden');
            }
        });
 
-       // 確認取代按鈕
        confirmReplaceButton.addEventListener('click', () => {
            confirmationModal.classList.add('hidden');
            performReplacement();
        });
 
-       // 取消取代按鈕
        cancelReplaceButton.addEventListener('click', () => {
            confirmationModal.classList.add('hidden');
        });
        
-       // 點擊背景關閉確認視窗
        confirmationModal.addEventListener('click', (e) => {
            if (e.target === confirmationModal) {
                confirmationModal.classList.add('hidden');
            }
        });
+       
+       // Sync scrolls
+       sourceCodeEl.addEventListener('scroll', () => syncScroll('sourceCode', 'lineNumbersContainer'));
+       lineNumbersContainerEl.addEventListener('scroll', () => syncScroll('lineNumbersContainer', 'sourceCode'));
 
-       // 確保初始狀態顯示
-       showStatus('請在上方輸入完整原始碼和欲尋找的片段。', 'info');
+       // Load state on page load
+       window.addEventListener('load', loadState);
 
    </script>
 </body>
