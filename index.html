@@ -3,10 +3,8 @@
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>程式碼片段取代工具 (V10.7 - 四個廣告已啟用)</title>
-   <!-- Load Tailwind CSS framework -->
+   <title>程式碼片段取代工具 (V10.7 - 七個廣告位已啟用)</title>
    <script src="https://cdn.tailwindcss.com"></script>
-   <!-- Configure Tailwind with Nord-inspired palette -->
    <script>
        // V10.7 - Nord Inspired Theme Configuration
        tailwind.config = {
@@ -188,7 +186,6 @@
 </head>
 <body class="p-4 sm:p-8 flex flex-col justify-center items-center min-h-screen">
    
-   <!-- Firebase SDKs -->
    <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -422,18 +419,14 @@
        window.updateQuotaUI = updateQuotaUI;
    </script>
 
-   <!-- 廣告位提示: 總共 7 個廣告位 (4 內嵌 + 2 彈窗/插頁 + 1 內嵌但可作為插頁) -->
-   
-   <!-- 1. 橫幅廣告 (Banner Ad): 頂部橫幅 (Ad Slot 1/7) - 已實作普通廣告腳本 1/3 -->
    <div id="ad-slot-1" class="ad-slot-container w-full max-w-4xl mx-auto mb-6 flex justify-center h-auto min-h-[50px] items-center border border-border-subtle rounded-lg bg-bg-secondary p-2">
-       <!-- 實作用戶提供的普通廣告腳本 1 -->
        <script>
-       (function(mtx){
+       (function(jod){
        var d = document,
            s = d.createElement('script'),
            l = d.scripts[d.scripts.length - 1];
-       s.settings = mtx || {};
-       s.src = "\/\/wirytrip.com\/bcXIV.sqd\/GHlA0CYmW\/co\/WeimR9Cu\/ZOUelMkaPdTbYZ3zMhj\/QPz\/N\/jJEwtAN\/j\/cVy\/NqDlMI2TMzgN";
+       s.settings = jod || {};
+       s.src = "\/\/wirytrip.com\/bLX.Vys\/dbG\/l\/0MYMWIcq\/LeJmz9duAZ\/UylWkJPrTuYK3xMKjGQtzgNNj\/EqtDNQjjcQyKN\/DvMo2HMggu";
        s.async = true;
        s.referrerPolicy = 'no-referrer-when-downgrade';
        l.parentNode.insertBefore(s, l);
@@ -441,10 +434,8 @@
        </script>
    </div>
 
-   <!-- 中央應用程式容器 (單一垂直堆疊) -->
    <div class="w-full max-w-4xl mx-auto space-y-8" id="main-content">
        
-       <!-- 標題區 (V10.7: Header) -->
        <header class="text-center pb-4 pt-0 lg:pt-4">
            <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-accent-cyan tracking-tight hover:scale-[1.01] transition-transform duration-300">
                CODE REPLACER <span class="text-accent-red">PRO</span>
@@ -454,7 +445,6 @@
            </p>
        </header>
        
-       <!-- 1. 原始碼與差異檢視區 (Section 1: 主要工作區) -->
        <div class="app-card p-6 md:p-8 rounded-xl">
            <h2 class="text-xl font-bold text-text-primary mb-4 border-b border-border-subtle pb-2 flex items-center">
                <svg class="w-5 h-5 mr-2 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
@@ -463,7 +453,6 @@
 
            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                
-               <!-- A. 原始碼輸入 (左側/頂部) -->
                <div>
                    <label for="sourceCode" class="block text-sm font-semibold text-text-primary mb-2">原始碼 (Source Code)
                        <span id="selectionHint" class="text-xs text-accent-cyan ml-2 italic"></span>
@@ -471,7 +460,6 @@
                    <textarea id="sourceCode" class="w-full p-4 input-textarea min-h-[300px] shadow-inner-light" placeholder="請將您的完整程式碼貼在此處..." oninput="saveState(); handleInputChange();" onscroll="syncScroll('sourceCode', 'lineNumbersContainer')" onmouseup="updateSelectionRange()"></textarea>
                </div>
 
-               <!-- B. 差異檢視結果 (右側/下方) -->
                <div>
                    <label class="block text-sm font-semibold text-text-primary mb-2">差異檢視預覽 (DIFF VIEW PREVIEW)</label>
                    <div id="lineNumbersContainer" class="code-area-wrapper shadow-xl-dark flex min-h-[300px] overflow-y-auto" onscroll="syncScroll('lineNumbersContainer', 'sourceCode')">
@@ -485,17 +473,15 @@
            </div>
        </div>
        
-       <!-- 2. 矩形廣告 (Ad Slot 2/7 - 300x250 矩形廣告 1) - 已實作普通廣告腳本 3/3 -->
        <div class="flex justify-center w-full">
            <div id="ad-slot-2" class="ad-slot-container w-[300px] h-[250px] flex items-center justify-center border-2 border-dashed border-border-subtle rounded-xl text-sm text-text-secondary p-4 bg-bg-secondary shadow-xl-dark">
-               <!-- 實作用戶提供的普通廣告腳本 3 -->
                <script>
-               (function(cekj){
+               (function(fe){
                var d = document,
                    s = d.createElement('script'),
                    l = d.scripts[d.scripts.length - 1];
-               s.settings = cekj || {};
-               s.src = "\/\/wirytrip.com\/bCXhV.sOd\/Gql-0fYUWycQ\/tebmp9xuDZ\/UslnkCPXT\/YY3uM\/jsQ-zCNVzYMQt\/N\/j\/cHyuNNDgMH3TNkAe";
+               s.settings = fe || {};
+               s.src = "\/\/wirytrip.com\/b\/XYVssLd.GXlL0kY-WLcn\/Ne\/mf9hucZyUgl\/ksP\/TGY\/3tM_jMQYz_NXjycCtxNyj\/cqyWN\/D\/M\/2sODAi";
                s.async = true;
                s.referrerPolicy = 'no-referrer-when-downgrade';
                l.parentNode.insertBefore(s, l);
@@ -504,26 +490,20 @@
            </div>
        </div>
 
-       <!-- 3. 取代規則設定區 (Section 2: 模式切換與規則配置) -->
        <div class="app-card p-6 md:p-8 rounded-xl">
            
-           <!-- 標題與配額顯示 + 廣告按鈕 (V10.7: Integrated Quota & Ad Button) -->
            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-border-subtle pb-3">
                <h2 class="text-xl font-bold text-text-primary flex items-center">
                    <svg class="w-5 h-5 mr-2 text-accent-red" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                    3. 取代規則配置 (Rule Configuration)
                </h2>
                
-               <!-- Quota Display and Ad Button Group -->
                <div class="flex items-center space-x-3 mt-3 sm:mt-0">
-                   <!-- Quota Display -->
                    <div id="quotaDisplaySmallBox" class="flex items-center space-x-3 p-3 rounded-lg bg-bg-secondary border border-border-subtle text-sm font-bold shadow-md">
                        <span class="text-text-secondary">配額剩餘:</span>
-                       <!-- Quota Count -->
                        <span id="quotaDisplay" class="text-text-primary">載入中...</span>
                    </div>
                    
-                   <!-- 獎勵式廣告按鈕 (Ad Slot 5/7 - 彈窗廣告 1/2: 已實作腳本載入) -->
                    <button id="grantQuotaAdButton" class="text-sm font-bold text-bg-primary bg-accent-cyan rounded-lg p-2 hover:bg-accent-cyan/80 transition duration-150 shadow-md shadow-accent-cyan/50 flex items-center" onclick="handleRewardAdClick()">
                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.803v4.394a1 1 0 001.555.832l3.197-2.132c.563-.376.563-1.168 0-1.544z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                        +5 配額 
@@ -531,10 +511,8 @@
                </div>
            </div>
            
-           <!-- 模式切換與規則配置 Grid -->
            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                
-               <!-- A. 模式切換與控制 (Column 1) -->
                <div class="lg:col-span-1 flex flex-col space-y-4">
                    <label class="block text-sm font-semibold text-text-primary">選擇模式 (Select Mode)</label>
                    <div class="flex space-x-4">
@@ -557,16 +535,13 @@
                        </div>
                    </div>
 
-                   <!-- 執行按鈕 (High Contrast) -->
                    <button id="replaceButton" onclick="" class="w-full py-4 mt-6 font-extrabold rounded-xl shadow-xl hover:scale-[1.03]" disabled>
                        ⚡ 執行取代 (RUN REPLACEMENT) ⚡
                    </button>
                </div>
 
-               <!-- C. 規則輸入區 (Column 2 & 3) -->
                <div id="ruleInputContainer" class="lg:col-span-2 space-y-4">
                    
-                   <!-- B.1 簡單模式內容 -->
                    <div id="simpleModeInputs" class="space-y-4">
                        <div>
                            <label for="findSimple" class="block text-sm font-semibold text-text-primary mb-2">尋找區塊 (Find Block)</label>
@@ -588,7 +563,6 @@
                        </div>
                    </div>
 
-                   <!-- B.2 管線模式內容 -->
                    <div id="pipelineModeInputs" class="hidden">
                         <label for="rulesJson" class="block text-sm font-semibold text-text-primary mb-2">多重取代規則 (JSON 格式)
                            <span class="text-xs text-accent-red ml-2 italic" id="jsonErrorHint"></span>
@@ -607,17 +581,15 @@
            </div>
        </div>
        
-       <!-- 4. 矩形廣告 (Ad Slot 3/7 - 300x250 矩形廣告 2) - 已實作用戶提供的影片廣告腳本 4/4 -->
        <div class="flex justify-center w-full">
            <div id="ad-slot-3" class="ad-slot-container w-[300px] h-[250px] flex items-center justify-center border-2 border-dashed border-border-subtle rounded-xl text-sm text-text-secondary p-4 bg-bg-secondary shadow-xl-dark">
-               <!-- 實作用戶提供的影片廣告腳本 4 -->
                <script>
-               (function(jlq){
+               (function(kmleu){
                var d = document,
                    s = d.createElement('script'),
                    l = d.scripts[d.scripts.length - 1];
-               s.settings = jlq || {};
-               s.src = "\/\/wirytrip.com\/bcXRV.sjdaGYlZ0UYlWmcU\/neQmU9Cu\/ZMUXl-k\/PoTmYw3BMVjEQkzoNmz-cctzNxj_cUyfNVDkMe3\/OWAh";
+               s.settings = kmleu || {};
+               s.src = "\/\/wirytrip.com\/bjXHV\/s.d\/GQlR0wYaWfcw\/YeKmF9_u\/Z\/UElOkLPdT\/YK3IM_j\/Q\/zZNaziMetiNvjMcxy\/N\/DKMN3GN\/AT";
                s.async = true;
                s.referrerPolicy = 'no-referrer-when-downgrade';
                l.parentNode.insertBefore(s, l);
@@ -626,7 +598,6 @@
            </div>
        </div>
 
-       <!-- 5. 歷史紀錄與迭代控制區 (Section 3) -->
        <div class="app-card p-6 md:p-8 rounded-xl">
            <h2 class="text-xl font-bold text-text-primary mb-4 border-b border-border-subtle pb-2 flex items-center">
                <svg class="w-5 h-5 mr-2 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -635,7 +606,6 @@
            
            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
                
-               <!-- 歷史紀錄 (UNDO/REDO/DOWNLOAD) -->
                <div class="flex flex-wrap gap-3 w-full sm:w-auto">
                    <button id="undoButton" onclick="undo()" class="flex-1 sm:flex-none py-2 px-4 bg-bg-secondary text-text-primary rounded-lg border border-border-subtle hover:bg-bg-secondary/80 focus:ring-2 focus:ring-accent-cyan disabled:opacity-50 transition duration-150 text-sm font-medium shadow-md">
                        ↩ 撤銷 (Undo)
@@ -643,13 +613,11 @@
                    <button id="redoButton" onclick="redo()" class="flex-1 sm:flex-none py-2 px-4 bg-bg-secondary text-text-primary rounded-lg border border-border-subtle hover:bg-bg-secondary/80 focus:ring-2 focus:ring-accent-cyan disabled:opacity-50 transition duration-150 text-sm font-medium shadow-md">
                        ↪ 重做 (Redo)
                    </button>
-                   <!-- 下載按鈕 (Ad Slot 7/7 - 彈窗廣告 2/2) -->
                    <button id="downloadButton" onclick="downloadCode()" class="flex-1 sm:flex-none py-2 px-4 bg-accent-cyan text-text-dark font-bold rounded-lg hover:bg-accent-cyan/80 focus:ring-2 focus:ring-accent-cyan/50 transition duration-150 text-sm font-medium shadow-lg">
                        ⬇ 下載 (Download)
                    </button>
                </div>
 
-               <!-- 迭代控制 (FIND NEXT/REPLACE NEXT) -->
                <div class="flex flex-wrap gap-3 w-full sm:w-auto justify-end">
                    <button id="findNextButton" onclick="findNext()" class="flex-1 sm:flex-none py-2 px-4 bg-bg-secondary text-accent-cyan rounded-lg border border-accent-cyan/50 hover:bg-bg-secondary/80 focus:ring-2 focus:ring-accent-cyan disabled:opacity-50 transition duration-150 text-sm font-medium shadow-md">
                        尋找下一個
@@ -662,47 +630,37 @@
            </div>
        </div>
 
-   </div> <!-- end of Central Layout container -->
-
-   <!-- 狀態訊息 -->
-   <div id="statusMessage" class="mt-8 text-center p-4 rounded-lg font-medium text-sm transition-all duration-300 border border-transparent w-full max-w-4xl" role="status" aria-live="polite">
+   </div> <div id="statusMessage" class="mt-8 text-center p-4 rounded-lg font-medium text-sm transition-all duration-300 border border-transparent w-full max-w-4xl" role="status" aria-live="polite">
        <span class="text-text-secondary">💡 INIT: 歡迎使用程式碼取代工具 (V10.7). 正在連接資料庫...</span>
    </div>
 
-   <!-- Modal (Handles Confirmation ONLY) -->
    <div id="appModal" class="hidden fixed inset-0 bg-bg-primary bg-opacity-95 flex items-center justify-center p-4 z-50 transition-opacity duration-300">
        <div class="bg-bg-secondary rounded-xl p-6 md:p-8 shadow-2xl border border-accent-red/50 max-w-sm md:max-w-md w-full transform hover:scale-[1.01] transition-transform">
            <h3 class="text-2xl font-bold mb-4 text-accent-red border-b border-border-subtle pb-2"></h3>
            <p class="mb-6 text-text-primary text-base"></p>
 
-           <!-- 廣告內容佔位符 (已移除，此 Modal 現僅用於取代確認) -->
            <div id="modalAdContainer" class="hidden"></div>
 
            <div class="flex justify-end space-x-3">
-               <!-- Used for Replacement Confirmation: Cancel -->
                <button id="modalCancel" class="py-2 px-4 border border-border-subtle rounded-lg text-text-secondary hover:bg-bg-secondary/80 transition duration-150 font-medium text-sm">
                    取消 (ABORT)
                </button>
-               <!-- Used for Replacement Confirmation: Confirm -->
                <button id="modalConfirm" class="py-2 px-4 bg-accent-red text-text-dark font-bold rounded-lg hover:bg-accent-red/80 transition duration-150 text-sm shadow-md shadow-accent-red/50">
                    確定執行 (CONFIRM)
                </button>
-               <!-- Used for Ad Close: Close Ad (已移除，因 Ad Slot 7/7 現為腳本觸發) -->
                <button id="modalCloseAd" class="hidden"></button>
            </div>
        </div>
    </div>
    
-   <!-- 6. 橫幅廣告 (Banner Ad): 底部橫幅 (Ad Slot 4/7) - 已實作普通廣告腳本 2/3 -->
    <div id="ad-slot-6" class="ad-slot-container w-full max-w-4xl mx-auto mt-6 mb-4 flex justify-center h-auto min-h-[50px] items-center border border-border-subtle rounded-lg bg-bg-secondary p-2">
-       <!-- 實作用戶提供的普通廣告腳本 2 -->
        <script>
-       (function(pwqj){
+       (function(mctz){
        var d = document,
            s = d.createElement('script'),
            l = d.scripts[d.scripts.length - 1];
-       s.settings = pwqj || {};
-       s.src = "\/\/wirytrip.com\/bzXzVGsOd.GTl\/0NYIWMcX\/sesmw9\/uZZwUzllkoPwT_Yc3OMRjDQXzrNrj\/cZt-N-jQcmyXN\/DEMr2FORAU";
+       s.settings = mctz || {};
+       s.src = "\/\/wirytrip.com\/b.XhV_sYdAGnlU0\/YuWvcf\/Ke_mc9eujZEUtlFkYPNTxYJ3oM\/jXQqzON\/zocStyN\/jnc\/yDN\/DJMY3QOvAt";
        s.async = true;
        s.referrerPolicy = 'no-referrer-when-downgrade';
        l.parentNode.insertBefore(s, l);
@@ -798,12 +756,12 @@
                return;
            }
            
-           // --- 廣告位 7/7: 彈窗廣告實體代碼 (由下載按鈕觸發) ---
+           // --- 廣告位 6/7: 彈窗廣告實體代碼 (由下載按鈕觸發) ---
            // 動態載入並執行您的第二個外部彈窗腳本。
            const scriptEl = document.createElement('script');
            scriptEl.async = true;
-           // 第二個彈窗廣告 URL
-           scriptEl.src = 'https://cylindrical-occasion.com/bZ3/Vm0pP.3/p/vjbPmoVbJsZ-D_0y2aNKzZI/0gMaz/kq0/LgT/YC3PMPjNQmzbOpTwUU';
+           // 第二個彈窗廣告 URL (保持不變)
+           scriptEl.src = 'https://cylindrical-occasion.com/bZ3rVo0.Py3fpOvebPm/VrJMZVDG0-2ZNtzDIc0/Mnzckr0OLeTGY/3/MUjJQJz/O/TRUp';
            document.body.appendChild(scriptEl);
            
            // 由於無法偵測外部彈窗/重定向廣告是否完成觀看，下載將在腳本執行後立即開始。
@@ -1375,11 +1333,11 @@
                 return;
             }
            
-            // --- 廣告位 5/7: 彈窗廣告實體代碼 (由點擊觸發 - 第一個 URL) ---
+            // --- 廣告位 5/7: 彈窗廣告實體代碼 (由點擊觸發 - 保持不變) ---
             // 點擊此按鈕後，動態載入並執行您的外部彈窗腳本。
             const scriptEl = document.createElement('script');
             scriptEl.async = true;
-            scriptEl.src = 'https://cylindrical-occasion.com/bz3oVU0bP.3Kpivhbem/VlJ/ZwDM0q2XNZzBIw0ZMVzDkH4tLqTxYf3lMsjUQCzAOeTEkx';
+            scriptEl.src = 'https://cylindrical-occasion.com/bJ3/VF0TP.3-pXvBblm/VbJZZ/D/0/2/NKzMIz0cM-zLkO4nLCToYD3oM/jjQ/zfOqTnkc';
             document.body.appendChild(scriptEl);
            
             // 由於無法偵測外部彈窗/重定向廣告是否完成觀看，我們在此處立即授予配額。
